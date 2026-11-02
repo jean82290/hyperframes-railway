@@ -12,7 +12,7 @@ This template deploys HeyGen's open-source HyperFrames renderer (headless Chrome
 
 > Unofficial deployment wrapper. Not affiliated with HeyGen. HyperFrames is Apache-2.0 licensed by its authors.
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/0f5rvG?referralCode=NamAm4&utm_medium=integration&utm_source=template&utm_campaign=generic)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/hyperframes-or-html-to-video-render-api-?referralCode=NamAm4&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
 ## How it works
 
