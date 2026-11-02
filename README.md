@@ -12,7 +12,7 @@ This template deploys HeyGen's open-source HyperFrames renderer (headless Chrome
 
 > Unofficial deployment wrapper. Not affiliated with HeyGen. HyperFrames is Apache-2.0 licensed by its authors.
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/hyperframes-render-api?referralCode=NamAm4&utm_medium=integration&utm_source=template&utm_campaign=generic)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/0f5rvG?referralCode=NamAm4&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
 ## How it works
 
@@ -188,7 +188,7 @@ Download links become presigned bucket URLs, so viewers download straight from t
 
 ## Resources and cost
 
-Rendering is CPU-bound: a 5-second 1080p video takes roughly 5 to 20 seconds on a few vCPUs, `draft` quality is about twice as fast as `high`, and 4K takes several times longer. The service idles at very low usage between renders. Keep `MAX_CONCURRENT_RENDERS=1` on small plans and raise it when you give the service more memory.
+Rendering is CPU-bound: on a default Railway service a 5-second 1080p video with GSAP and web fonts renders in about 30 seconds. `draft` quality is faster than `high`, smaller canvases are much faster, and 4K takes several times longer. The service idles at very low usage between renders. Keep `MAX_CONCURRENT_RENDERS=1` on small plans and raise it when you give the service more memory.
 
 ## Security notes
 
