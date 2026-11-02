@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;800&display=block" rel="stylesheet">
+  <style>
+    html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #0b1020; font-family: Inter, sans-serif; }
+    .scene { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; }
+    h1 { font-size: 140px; font-weight: 800; margin: 0; letter-spacing: -4px; }
+    p { font-size: 48px; opacity: .7; margin: 24px 0 0; }
+    .bar { position: absolute; left: 0; bottom: 0; height: 12px; width: 100%; background: linear-gradient(90deg, #7c3aed, #22d3ee); transform-origin: left; }
+  </style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="5" data-width="1920" data-height="1080">
+    <section id="intro" class="scene clip" data-start="0" data-duration="5" data-track-index="0">
+      <h1 id="title" data-var-text="title">Hello from Railway</h1>
+      <p id="subtitle" data-var-text="subtitle">Rendered with HyperFrames</p>
+      <div id="bar" class="bar"></div>
+    </section>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    tl.from("#title", { y: 80, opacity: 0, duration: 0.8, ease: "power3.out" })
+      .from("#subtitle", { y: 40, opacity: 0, duration: 0.6 }, "-=0.3")
+      .from("#bar", { scaleX: 0, duration: 4.2, ease: "none" }, 0.8);
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>

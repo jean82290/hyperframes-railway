@@ -1,0 +1,25 @@
+{
+  "name": "hyperframes-railway",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Self-hosted HyperFrames render API: HTML in, MP4 out. REST, MCP and webhooks for AI agents and n8n.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test --test-concurrency=1 tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1161.0",
+    "@aws-sdk/lib-storage": "^3.1161.0",
+    "@aws-sdk/s3-request-presigner": "^3.1161.0",
+    "@hyperframes/producer": "0.9.4",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "yauzl": "^3.4.0",
+    "zod": "^4.6.7"
+  }
+}

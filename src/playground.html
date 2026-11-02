@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HyperFrames Render API</title>
+<style>
+  :root {
+    --bg: #0c0d10; --panel: #15171c; --line: #262a33; --text: #e8eaf0; --muted: #8b91a1;
+    --accent: #8b5cf6; --accent-2: #22d3ee; --ok: #34d399; --bad: #f87171;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { display: flex; align-items: center; gap: 14px; padding: 18px 28px; border-bottom: 1px solid var(--line); }
+  .logo { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+  h1 { font-size: 17px; margin: 0; font-weight: 650; letter-spacing: -.2px; }
+  .sub { color: var(--muted); font-size: 13px; }
+  .pill { margin-left: auto; font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+  .pill.ok { color: var(--ok); border-color: #1f4d3d; }
+  main { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 20px; padding: 20px 28px 40px; max-width: 1500px; margin: 0 auto; }
+  @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 12px; font-weight: 600; }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  input, select, textarea { width: 100%; background: #0f1115; color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font: inherit; }
+  textarea { font: 12.5px/1.5 var(--mono); resize: vertical; }
+  #html { min-height: 420px; }
+  .row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+  .actions { display: flex; gap: 10px; align-items: center; margin-top: 14px; }
+  button { background: var(--accent); color: white; border: 0; border-radius: 8px; padding: 9px 16px; font: inherit; font-weight: 600; cursor: pointer; }
+  button.secondary { background: transparent; border: 1px solid var(--line); color: var(--text); font-weight: 500; }
+  button:disabled { opacity: .5; cursor: wait; }
+  .status { color: var(--muted); font-size: 13px; }
+  .bar { height: 6px; background: #0f1115; border-radius: 99px; overflow: hidden; margin: 12px 0; border: 1px solid var(--line); }
+  .bar > div { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .4s; }
+  video { width: 100%; border-radius: 8px; background: #000; display: none; margin-top: 8px; }
+  .err { color: var(--bad); white-space: pre-wrap; font-size: 13px; }
+  pre { background: #0f1115; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; overflow-x: auto; font: 12px/1.55 var(--mono); margin: 6px 0 14px; white-space: pre; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .tabs button { background: transparent; border: 1px solid var(--line); color: var(--muted); padding: 5px 10px; font-size: 13px; font-weight: 500; }
+  .tabs button.on { color: var(--text); border-color: var(--accent); }
+  a { color: var(--accent-2); }
+  .stack { display: grid; gap: 20px; align-content: start; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  td { padding: 6px 4px; border-top: 1px solid var(--line); color: var(--muted); }
+  td:first-child { font-family: var(--mono); font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"></div>
+  <div>
+    <h1>HyperFrames Render API</h1>
+    <div class="sub">HTML in, video out. REST, MCP and webhooks for your agents and automations.</div>
+  </div>
+  <span class="pill" id="health">checking…</span>
+</header>
+<main>
+  <section>
+    <h2>Composition</h2>
+    <label for="key">API key (Railway → this service → Variables → API_KEY). Stored only in this browser.</label>
+    <input id="key" type="password" placeholder="Paste your API key" autocomplete="off">
+    <div style="height:12px"></div>
+    <label for="html">HTML</label>
+    <textarea id="html" spellcheck="false"></textarea>
+    <div class="row">
+      <div><label>Format</label><select id="format"><option>mp4</option><option>webm</option><option>mov</option><option>gif</option></select></div>
+      <div><label>Quality</label><select id="quality"><option>draft</option><option selected>standard</option><option>high</option></select></div>
+      <div><label>FPS</label><input id="fps" type="number" value="30" min="1" max="120"></div>
+      <div><label>Resolution</label><select id="res"><option value="">from HTML</option><option>landscape</option><option>portrait</option><option>square</option><option>landscape-4k</option></select></div>
+    </div>
+    <div style="margin-top:12px">
+      <label for="vars">Variables (JSON, optional)</label>
+      <input id="vars" placeholder='{"title": "Hello from Railway"}' spellcheck="false">
+    </div>
+    <div class="actions">
+      <button id="go">Render video</button>
+      <button class="secondary" id="reset">Reset example</button>
+      <span class="status" id="status"></span>
+    </div>
+  </section>
+  <div class="stack">
+    <section>
+      <h2>Result</h2>
+      <div class="bar"><div id="progress"></div></div>
+      <div class="status" id="stage">Render something to see it here.</div>
+      <video id="video" controls playsinline></video>
+      <div id="links" class="status" style="margin-top:8px"></div>
+      <div class="err" id="error"></div>
+    </section>
+    <section>
+      <h2>Connect</h2>
+      <div class="tabs" id="tabs">
+        <button data-t="curl" class="on">curl</button><button data-t="mcp">Claude Code / MCP</button><button data-t="n8n">n8n</button><button data-t="agents">Agents</button>
+      </div>
+      <div id="snippet"></div>
+    </section>
+    <section>
+      <h2>Recent renders</h2>
+      <table id="recent"><tr><td>Add your API key to list renders.</td></tr></table>
+    </section>
+  </div>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const origin = location.origin;
+  const store = {
+    get(k) { try { return localStorage.getItem(k) || ""; } catch { return ""; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  };
+  let example = "";
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  const snippets = {
+    curl: () => `<pre>curl -X POST ${origin}/v1/renders \\
+  -H "Authorization: Bearer $API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"html": "&lt;!doctype html&gt;…", "format": "mp4", "wait": true}'</pre>
+<div class="status">Returns <code>output.url</code>, a signed download link. Without <code>wait</code> you get an id: poll <code>GET /v1/renders/{id}</code> or pass <code>webhookUrl</code>. A project folder can be sent as a .zip body:</div>
+<pre>curl -X POST "${origin}/v1/renders?wait=true&format=mp4" \\
+  -H "Authorization: Bearer $API_KEY" \\
+  -H "Content-Type: application/zip" --data-binary @project.zip</pre>`,
+    mcp: () => `<pre>claude mcp add --transport http hyperframes ${origin}/mcp \\
+  --header "Authorization: Bearer YOUR_API_KEY"</pre>
+<div class="status">Cursor, Windsurf and other MCP clients: URL <code>${origin}/mcp</code> with the same header. Tools: <code>render_video</code>, <code>get_render</code>, <code>composition_guide</code>. Then ask: “make a 10-second launch teaser for my app and render it”.</div>`,
+    n8n: () => `<div class="status">HTTP Request node: Method <b>POST</b>, URL <code>${origin}/v1/renders</code>, Authentication: Generic → Header Auth (<code>Authorization</code> = <code>Bearer YOUR_API_KEY</code>), Body JSON:</div>
+<pre>{
+  "html": "{{ $json.html }}",
+  "variables": { "title": "{{ $json.title }}" },
+  "format": "mp4",
+  "wait": true
+}</pre>
+<div class="status">The response's <code>output.url</code> feeds straight into an upload to YouTube, TikTok, Drive or S3. For long videos use <code>webhookUrl</code> with an n8n Webhook node instead of <code>wait</code>. A ready-made workflow is in the repository (<code>examples/n8n-workflow.json</code>).</div>`,
+    agents: () => `<div class="status">Any agent can read the authoring rules at <a href="${origin}/llms.txt" target="_blank">${origin}/llms.txt</a> (no key needed), write the HTML, then call the API. Compositions written with the official HyperFrames skills render here unchanged.</div>`,
+  };
+  function showTab(name) {
+    document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("on", b.dataset.t === name));
+    $("snippet").innerHTML = snippets[name]();
+  }
+  $("tabs").addEventListener("click", (e) => { if (e.target.dataset.t) showTab(e.target.dataset.t); });
+
+  async function api(path, options = {}) {
+    const res = await fetch(path, { ...options, headers: { "content-type": "application/json", authorization: `Bearer ${$("key").value.trim()}`, ...(options.headers || {}) } });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401) throw new Error("Invalid API key.");
+    if (!res.ok && res.status !== 422) throw new Error(data.error || `HTTP ${res.status}`);
+    return data;
+  }
+
+  function showResult(r) {
+    $("progress").style.width = `${r.progress || 0}%`;
+    $("stage").textContent = `${r.status} · ${r.stage || ""} ${r.progress ? `· ${r.progress}%` : ""}`;
+    if (r.status === "succeeded" && r.output) {
+      const v = $("video");
+      v.style.display = r.output.contentType.startsWith("video/") ? "block" : "none";
+      if (v.style.display === "block") v.src = r.output.url;
+      const mb = (r.output.bytes / 1048576).toFixed(2);
+      $("links").innerHTML = `<a href="${esc(r.output.url)}" target="_blank">Download ${esc(r.output.filename)}</a> · ${mb} MB · link valid until ${new Date(r.output.urlExpiresAt).toLocaleString()}`
+        + (r.output.contentType === "image/gif" ? `<br><img src="${esc(r.output.url)}" style="max-width:100%;margin-top:8px;border-radius:8px">` : "");
+    }
+    if (r.status === "failed" || r.status === "canceled") $("error").textContent = r.error || r.status;
+  }
+
+  async function render() {
+    $("error").textContent = ""; $("links").textContent = ""; $("video").style.display = "none";
+    if (!$("key").value.trim()) { $("error").textContent = "Paste your API key first."; return; }
+    store.set("hf_api_key", $("key").value.trim());
+    let variables;
+    if ($("vars").value.trim()) {
+      try { variables = JSON.parse($("vars").value); } catch { $("error").textContent = "Variables must be valid JSON."; return; }
+    }
+    $("go").disabled = true; $("status").textContent = "Submitting…";
+    try {
+      const body = { html: $("html").value, format: $("format").value, quality: $("quality").value, fps: Number($("fps").value) || 30, variables };
+      if ($("res").value) body.outputResolution = $("res").value;
+      let r = await api("/v1/renders", { method: "POST", body: JSON.stringify(body) });
+      $("status").textContent = "";
+      while (!["succeeded", "failed", "canceled"].includes(r.status)) {
+        showResult(r);
+        r = await api(`/v1/renders/${r.id}?wait=2`);
+      }
+      showResult(r);
+      loadRecent();
+    } catch (err) {
+      $("error").textContent = err.message; $("status").textContent = "";
+    } finally {
+      $("go").disabled = false;
+    }
+  }
+
+  async function loadRecent() {
+    if (!$("key").value.trim()) return;
+    try {
+      const { renders } = await api("/v1/renders?limit=8");
+      $("recent").innerHTML = renders.length ? renders.map((r) => `<tr><td>${r.id.slice(0, 8)}</td><td>${esc(r.status)}</td><td>${esc(r.format)}</td><td>${new Date(r.createdAt).toLocaleString()}</td><td>${r.output?.url ? `<a href="${esc(r.output.url)}" target="_blank">open</a>` : ""}</td></tr>`).join("") : "<tr><td>No renders yet.</td></tr>";
+    } catch (err) {
+      $("recent").innerHTML = `<tr><td>${esc(err.message)}</td></tr>`;
+    }
+  }
+
+  $("go").addEventListener("click", render);
+  $("reset").addEventListener("click", () => { $("html").value = example; });
+  $("key").addEventListener("change", loadRecent);
+  $("key").value = store.get("hf_api_key");
+  showTab("curl");
+  fetch("/v1/example").then((r) => r.text()).then((t) => { example = t; $("html").value = t; });
+  fetch("/health").then((r) => r.json()).then((h) => {
+    $("health").textContent = `online · ${h.queue.running} rendering · ${h.queue.queued} queued · storage: ${h.storage}`;
+    $("health").classList.add("ok");
+  }).catch(() => { $("health").textContent = "offline"; });
+  loadRecent();
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+{
+  "name": "HyperFrames: render personalised videos",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a1",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "t1",
+              "name": "title",
+              "value": "Welcome aboard, Alex",
+              "type": "string"
+            },
+            {
+              "id": "t2",
+              "name": "subtitle",
+              "value": "Your workspace is ready",
+              "type": "string"
+            },
+            {
+              "id": "t3",
+              "name": "html",
+              "value": "<!doctype html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <script src=\"https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js\"></script>\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;800&display=block\" rel=\"stylesheet\">\n  <style>\n    html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #0b1020; font-family: Inter, sans-serif; }\n    .scene { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; }\n    h1 { font-size: 140px; font-weight: 800; margin: 0; letter-spacing: -4px; }\n    p { font-size: 48px; opacity: .7; margin: 24px 0 0; }\n    .bar { position: absolute; left: 0; bottom: 0; height: 12px; width: 100%; background: linear-gradient(90deg, #7c3aed, #22d3ee); transform-origin: left; }\n  </style>\n</head>\n<body>\n  <div id=\"root\" data-composition-id=\"main\" data-start=\"0\" data-duration=\"5\" data-width=\"1920\" data-height=\"1080\">\n    <section id=\"intro\" class=\"scene clip\" data-start=\"0\" data-duration=\"5\" data-track-index=\"0\">\n      <h1 id=\"title\" data-var-text=\"title\">Hello from Railway</h1>\n      <p id=\"subtitle\" data-var-text=\"subtitle\">Rendered with HyperFrames</p>\n      <div id=\"bar\" class=\"bar\"></div>\n    </section>\n  </div>\n  <script>\n    window.__timelines = window.__timelines || {};\n    const tl = gsap.timeline({ paused: true });\n    tl.from(\"#title\", { y: 80, opacity: 0, duration: 0.8, ease: \"power3.out\" })\n      .from(\"#subtitle\", { y: 40, opacity: 0, duration: 0.6 }, \"-=0.3\")\n      .from(\"#bar\", { scaleX: 0, duration: 4.2, ease: \"none\" }, 0.8);\n    window.__timelines[\"main\"] = tl;\n  </script>\n</body>\n</html>",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a2",
+      "name": "Video data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://YOUR-SERVICE.up.railway.app/v1/renders",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ html: $json.html, variables: { title: $json.title, subtitle: $json.subtitle }, format: \"mp4\", quality: \"standard\", filename: \"welcome\", wait: true }) }}",
+        "options": {
+          "timeout": 600000
+        }
+      },
+      "id": "a3",
+      "name": "Render video",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.output.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "a4",
+      "name": "Download MP4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Video data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video data": {
+      "main": [
+        [
+          {
+            "node": "Render video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render video": {
+      "main": [
+        [
+          {
+            "node": "Download MP4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
